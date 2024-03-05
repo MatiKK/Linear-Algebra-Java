@@ -61,7 +61,7 @@ public final class MatrixOperations {
 		double[][] matt = new double[r = arr.length][c = arr[0].length];
 		for (int i = 0; i < r; i++) {
 			for (int j = 0; j < c; j++) {
-				matt[i][j] = Utils.shouldRound(matt[i][j] * alpha);
+				matt[i][j] = arr[i][j] * alpha;
 			}
 		}
 		return matt;
@@ -71,7 +71,7 @@ public final class MatrixOperations {
 		return new RealMatrix(multiplyByScalarArray2d(mat.data(), alpha), false, false);
 	}
 
-	public static RealMatrix identityMatrix(int n) {
+	public static double[][] identityArray2d(int n){
 		if (n < 1)
 			throw new IllegalArgumentException();
 		double[][] mat = new double[n][n];
@@ -81,7 +81,11 @@ public final class MatrixOperations {
 			row[i] = 1;
 			mat[i] = row;
 		}
-		return new RealMatrix(mat, false, false);
+		return mat;
+	}
+
+	public static RealMatrix identityMatrix(int n) {
+		return new RealMatrix(identityArray2d(n), false, false);
 	}
 
 }

@@ -38,27 +38,29 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 		numbers = new double[currentRowCapacity][currentColumnCapacity];
 	}
 
-	public RealMatrix(double[][] mat) {
-		this(mat, true, false);
+	public RealMatrix(double[][] data) {
+		this(data, true, false);
 	}
 
-	RealMatrix(double[][] mat, boolean shouldCheckIf2dArrayIsValid, boolean keepSameCapacity) {
+	RealMatrix(double[][] data, boolean shouldCheckIf2dArrayIsValid, boolean keepSameCapacity) {
 		if (shouldCheckIf2dArrayIsValid) {
-			checkIfItIsRegular(mat);
+			checkIfItIsRegular(data);
 		}
-		assignMatrix(mat, keepSameCapacity);
+		assignMatrix(data, keepSameCapacity);
 	}
 
-	private void assignMatrix(double[][] mat, boolean keepCurrentCapacity) {
-		numbers = mat.clone();
-		int r = mat.length, c = mat[0].length;
+	private void assignMatrix(double[][] data, boolean keepCurrentCapacity) {
+		numbers = data.clone();
+		int r = data.length, c = data[0].length;
 		if (keepCurrentCapacity) {
 			if (currentRowCapacity < r)
 				throw new IllegalArgumentException();
 			if (currentColumnCapacity < c)
 				throw new IllegalArgumentException();
+
 			growRowsCapacity(currentRowCapacity, false);
 			growColumnsCapacity(currentColumnCapacity, false);
+
 		} else {
 			currentRowCapacity = r;
 			currentColumnCapacity = c;
@@ -67,17 +69,17 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 		columnsLength = c;
 	}
 
-	private static void checkIfItIsRegular(double[][] mat) {
-		int size = mat.length;
+	private static void checkIfItIsRegular(double[][] data) {
+		int size = data.length;
 		if (size == 0) {
 			throw new IllegalArgumentException("Empty matrix");
 		}
-		int expectedSize = mat[0].length;
+		int expectedSize = data[0].length;
 		if (expectedSize == 0) {
 			throw new IllegalArgumentException("Empty row");
 		}
 		for (int i = 1; i < size; i++) {
-			if (mat[i].length != expectedSize) {
+			if (data[i].length != expectedSize) {
 				throw new IllegalArgumentException("The 2d-array is not regular");
 			}
 		}
@@ -166,7 +168,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 
 	@Override
 	public int hashCode() {
-		return data().hashCode() * 127 / 32;
+		return data().hashCode();
 	}
 
 	public matrices.Matrix subMatrix(int indexRow, int indexColumn) {
@@ -327,7 +329,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public void trimColumnsToSize() {
-		for (int i = 0; i < currentColumnCapacity; i++) {
+		for (int i = 0; i < currentRowCapacity; i++) {
 			numbers[i] = Arrays.copyOf(numbers[i], columnSize());
 		}
 		currentColumnCapacity = columnSize();
@@ -585,7 +587,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 				mat[i][j] = numbers[j][i];
 			}
 		}
-		return new RealMatrix(mat, false, true);
+		return new RealMatrix(mat, false, false);
 	}
 
 	@Override
