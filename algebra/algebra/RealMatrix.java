@@ -172,6 +172,12 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public matrices.Matrix subMatrix(int indexRow, int indexColumn) {
+		if (isEmpty() || rowSize() == 1 || columnSize() == 1) {
+			throw new IllegalArgumentException();
+		}
+
+		Utils.checkIndex(indexRow, rowSize() - 1);
+		Utils.checkIndex(indexColumn, columnSize() - 1);
 		double[][] mat = new double[rowsLength - 1][columnsLength - 1];
 		int a = -1, b;
 		for (int i = 0; i < rowSize(); i++) {
@@ -341,7 +347,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public double[] getRow(int index) {
-		checkIndexToAddOrGetRow(index);
+		checkIndexForRow(index);
 		return getRowUnsafe(index);
 	}
 
@@ -350,7 +356,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public double[] getColumn(int index) {
-		checkIndexToAddOrGetColumn(index);
+		checkIndexForColumn(index);
 		int size;
 		double[] column = new double[size = rowSize()];
 		for (int i = 0; i < size; i++) {
@@ -369,7 +375,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public double[] setRow(int index, double[] newRow) {
-		checkIndexToSetRow(index);
+		checkIndexForRow(index - 1);
 		checkRowCompability(newRow.length);
 		return setRowUnsafe(index, newRow);
 	}
@@ -390,7 +396,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public double[] setColumn(int index, double[] newColumn) {
-		checkIndexToSetColumn(index);
+		checkIndexForColumn(index - 1);
 		checkColumnCompability(newColumn.length);
 		return setColumnIgnoreRequirements(index, newColumn);
 	}
@@ -416,7 +422,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public double[] removeRow(int index) {
-		checkIndexToAddOrGetRow(index);
+		checkIndexForRow(index - 1);
 		double[] removedRow = getRowUnsafe(index);
 		System.arraycopy(numbers, index + 1, numbers, index, rowSize() - index - 1);
 		rowsLength--;
@@ -436,8 +442,8 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public void swapRows(int indexRow1, int indexRow2) {
-		checkIndexToAddOrGetRow(indexRow1);
-		checkIndexToAddOrGetRow(indexRow2);
+		checkIndexForRow(indexRow1 - 1);
+		checkIndexForRow(indexRow2 - 1);
 		if (indexRow1 == indexRow2)
 			return; // May look if it is better to throw exception
 		swapRowsUnsafe(indexRow1, indexRow2);
@@ -449,25 +455,16 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 		numbers[indexRow1] = temp;
 	}
 
-	private void checkIndexToAddOrGetRow(int index) {
+	private void checkIndexForRow(int index) {
 		Utils.checkIndex(index, rowSize());
 	}
 
-	private void checkIndexToSetRow(int index) {
-		Utils.checkIndex(index, rowSize() - 1);
-	}
-
-	private void checkIndexToAddOrGetColumn(int index) {
+	private void checkIndexForColumn(int index) {
 		Utils.checkIndex(index, columnSize());
 	}
-
-	private void checkIndexToSetColumn(int index) {
-		Utils.checkIndex(index, rowSize() - 1);
-	}
-
 	private void checkIndexForNumber(int indexR, int indexC) {
-		checkIndexToAddOrGetRow(indexR);
-		checkIndexToAddOrGetColumn(indexC);
+		checkIndexForRow(indexR);
+		checkIndexForColumn(indexC);
 	}
 
 	/*
@@ -622,42 +619,42 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 
 	@Override
 	public void addRow(int index, int[] row) {
-		checkIndexToAddOrGetRow(index);
+		checkIndexForRow(index);
 		checkRowCompability(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public void addRow(int index, byte[] row) {
-		checkIndexToAddOrGetRow(index);
+		checkIndexForRow(index);
 		checkRowCompability(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public void addRow(int index, short[] row) {
-		checkIndexToAddOrGetRow(index);
+		checkIndexForRow(index);
 		checkRowCompability(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public void addRow(int index, long[] row) {
-		checkIndexToAddOrGetRow(index);
+		checkIndexForRow(index);
 		checkRowCompability(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public void addRow(int index, float[] row) {
-		checkIndexToAddOrGetRow(index);
+		checkIndexForRow(index);
 		checkRowCompability(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public <T extends Number> void addRow(int index, T[] row) {
-		checkIndexToAddOrGetRow(index);
+		checkIndexForRow(index);
 		checkRowCompability(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
@@ -694,126 +691,126 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 
 	@Override
 	public void addColumn(int index, int[] column) {
-		checkIndexToAddOrGetColumn(index);
+		checkIndexForColumn(index);
 		checkColumnCompability(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public void addColumn(int index, byte[] column) {
-		checkIndexToAddOrGetColumn(index);
+		checkIndexForColumn(index);
 		checkColumnCompability(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public void addColumn(int index, short[] column) {
-		checkIndexToAddOrGetColumn(index);
+		checkIndexForColumn(index);
 		checkColumnCompability(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public void addColumn(int index, long[] column) {
-		checkIndexToAddOrGetColumn(index);
+		checkIndexForColumn(index);
 		checkColumnCompability(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public void addColumn(int index, float[] column) {
-		checkIndexToAddOrGetColumn(index);
+		checkIndexForColumn(index);
 		checkColumnCompability(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public <T extends Number> void addColumn(int index, T[] column) {
-		checkIndexToAddOrGetColumn(index);
+		checkIndexForColumn(index - 1);
 		checkColumnCompability(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, int[] newRow) {
-		checkIndexToSetRow(indexRow);
+		checkIndexForRow(indexRow - 1);
 		checkRowCompability(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, byte[] newRow) {
-		checkIndexToSetRow(indexRow);
+		checkIndexForRow(indexRow - 1);
 		checkRowCompability(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, short[] newRow) {
-		checkIndexToSetRow(indexRow);
+		checkIndexForRow(indexRow - 1);
 		checkRowCompability(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, long[] newRow) {
-		checkIndexToSetRow(indexRow);
+		checkIndexForRow(indexRow - 1);
 		checkRowCompability(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, float[] newRow) {
-		checkIndexToSetRow(indexRow);
+		checkIndexForRow(indexRow - 1);
 		checkRowCompability(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public <T extends Number> double[] setRow(int indexRow, T[] newRow) {
-		checkIndexToSetRow(indexRow);
+		checkIndexForRow(indexRow - 1);
 		checkRowCompability(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, int[] newColumn) {
-		checkIndexToSetColumn(indexColumn);
+		checkIndexForColumn(indexColumn - 1);
 		checkColumnCompability(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, byte[] newColumn) {
-		checkIndexToSetColumn(indexColumn);
+		checkIndexForColumn(indexColumn - 1);
 		checkColumnCompability(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, short[] newColumn) {
-		checkIndexToSetColumn(indexColumn);
+		checkIndexForColumn(indexColumn - 1);
 		checkColumnCompability(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, long[] newColumn) {
-		checkIndexToSetColumn(indexColumn);
+		checkIndexForColumn(indexColumn - 1);
 		checkColumnCompability(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, float[] newColumn) {
-		checkIndexToSetColumn(indexColumn);
+		checkIndexForColumn(indexColumn - 1);
 		checkColumnCompability(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public <T extends Number> double[] setColumn(int indexColumn, T[] newColumn) {
-		checkIndexToSetColumn(indexColumn);
+		checkIndexForColumn(indexColumn - 1);
 		checkColumnCompability(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
