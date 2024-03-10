@@ -16,7 +16,7 @@ public final class Utils {
 	}
 
 	public static void checkArrays2dCorrectDimensionForMultiplication(double[][] arr1, double[][] arr2) {
-		if (arr1.length != arr2[0].length)
+		if (arr1[0].length != arr2.length)
 			throw new IllegalArgumentException();
 	}
 

@@ -5,6 +5,9 @@ public final class MatrixOperations {
 //	TODO sparse matrices?
 //	private static Double ZERO = Double.valueOf(0.0d);
 
+	/**
+	 * @deprecated Too heavy process
+	 */
 	public static double[][] addArrays2d(double[][] arr1, double[][] arr2) {
 		Utils.checkArrays2dSameDimension(arr1, arr2);
 		int r, c;
@@ -16,10 +19,9 @@ public final class MatrixOperations {
 		return mat;
 	}
 
-	public static RealMatrix addMatrices(RealMatrix mat1, RealMatrix mat2) {
-		return new RealMatrix(addArrays2d(mat1.data(), mat2.data()), false, false);
-	}
-
+	/**
+	 * @deprecated Too heavy process
+	 */
 	public static double[][] subtractArrays2d(double[][] arr1, double[][] arr2) {
 		Utils.checkArrays2dSameDimension(arr1, arr2);
 		int r, c;
@@ -31,10 +33,26 @@ public final class MatrixOperations {
 		return mat;
 	}
 
-	public static RealMatrix subtractMatrices(RealMatrix mat1, RealMatrix mat2) {
-		return new RealMatrix(subtractArrays2d(mat1.data(), mat2.data()), false, false);
+	/**
+	 * @deprecated
+	 */
+	public static double[][] multiplyByScalarArray2d(double[][] arr, double alpha) {
+		if (!Double.isFinite(alpha))
+			throw new IllegalArgumentException("Invalid number as scalar: " + alpha);
+		int r, c;
+		double[][] matt = new double[r = arr.length][c = arr[0].length];
+		for (int i = 0; i < r; i++) {
+			for (int j = 0; j < c; j++) {
+				matt[i][j] = arr[i][j] * alpha;
+			}
+		}
+		return matt;
 	}
 
+	/**
+	 * @deprecated Same speed but heavier
+	 * Also the alhgorithm is wrong
+	 */
 	public static double[][] multiplyArrays2d(double[][] arr1, double[][] arr2) {
 		Utils.checkArrays2dCorrectDimensionForMultiplication(arr1, arr2);
 		int r1, c2, common;
@@ -50,25 +68,35 @@ public final class MatrixOperations {
 		return mat;
 	}
 
-	public static RealMatrix multiplyMatrices(RealMatrix mat1, RealMatrix mat2) {
-		return new RealMatrix(multiplyArrays2d(mat1.data(), mat2.data()), false, false);
+	public static RealMatrix addMatrices(RealMatrix mat1, RealMatrix mat2) {
+//		return new RealMatrix(addArrays2d(mat1.data(), mat2.data()), false, false);
+		Utils.checkMatricesSameDimension(mat1, mat2);
+		RealMatrix m = (RealMatrix) mat1.clone();
+		m.add(mat2);
+		return m;
 	}
 
-	public static double[][] multiplyByScalarArray2d(double[][] arr, double alpha) {
-		if (!Double.isFinite(alpha))
-			throw new IllegalArgumentException("Invalid number as scalar: " + alpha);
-		int r, c;
-		double[][] matt = new double[r = arr.length][c = arr[0].length];
-		for (int i = 0; i < r; i++) {
-			for (int j = 0; j < c; j++) {
-				matt[i][j] = arr[i][j] * alpha;
-			}
-		}
-		return matt;
+	public static RealMatrix subtractMatrices(RealMatrix mat1, RealMatrix mat2) {
+//		return new RealMatrix(subtractArrays2d(mat1.data(), mat2.data()), false, false);
+		Utils.checkMatricesSameDimension(mat1, mat2);
+		RealMatrix m = (RealMatrix) mat1.clone();
+		m.subtract(mat2);
+		return m;
+	}
+
+	public static RealMatrix multiplyMatrices(RealMatrix mat1, RealMatrix mat2) {
+//		return new RealMatrix(multiplyArrays2d(mat1.data(), mat2.data()), false, false);
+		Utils.checkMatricesSameDimension(mat1, mat2);
+		RealMatrix m = (RealMatrix) mat1.clone();
+		m.multiply(mat2);
+		return m;
 	}
 
 	public static RealMatrix matrixScalarMultiplication(RealMatrix mat, double alpha) {
-		return new RealMatrix(multiplyByScalarArray2d(mat.data(), alpha), false, false);
+//		return new RealMatrix(multiplyByScalarArray2d(mat.data(), alpha), false, false);
+		RealMatrix m = (RealMatrix) mat.clone();
+		m.scalarMultiply(alpha);
+		return m;
 	}
 
 	public static double[][] identityArray2d(int n){

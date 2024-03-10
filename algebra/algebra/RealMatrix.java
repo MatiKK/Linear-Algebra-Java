@@ -171,7 +171,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 		return data().hashCode();
 	}
 
-	public matrices.Matrix subMatrix(int indexRow, int indexColumn) {
+	public RealMatrix subMatrix(int indexRow, int indexColumn) {
 		if (isEmpty() || rowSize() == 1 || columnSize() == 1) {
 			throw new IllegalArgumentException();
 		}
@@ -198,13 +198,6 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public void print() {
-// 		This was a Test
-
-//		System.out.print('[');
-//		for (double[] row: numbers)
-//			System.out.println(Arrays.toString(row));
-//		System.out.println(']');
-
 		System.out.println(eachRowByLineBreak());
 	}
 
@@ -322,6 +315,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 		if (addToCurrentCapacity) {
 			newLength += currentColumnCapacity;
 		}
+		if (newLength <= currentColumnCapacity) return;
 		for (int i = 0; i < currentRowCapacity; i++) {
 			numbers[i] = Arrays.copyOf(numbers[i], newLength);
 			Arrays.fill(numbers[i], columnSize(), newLength, 0);
@@ -858,20 +852,48 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public void add(RealMatrix m) {
-		assignMatrix(MatrixOperations.addMatrices(this, m).data(), true);
+//		slower and probably I think heavier
+//		assignMatrix(MatrixOperations.addMatrices(this, m).data(), true);
+ 		Utils.checkMatricesSameDimension(this, m);
+		for (int i = 0; i < rowSize(); i++)
+			for(int j = 0; j < columnSize(); j++)
+				numbers[i][j] += m.numbers[i][j];
 	}
 
 	public void subtract(RealMatrix m) {
-		assignMatrix(MatrixOperations.subtractMatrices(this, m).data(), true);
+//		assignMatrix(MatrixOperations.subtractMatrices(this, m).data(), true);
+		Utils.checkMatricesSameDimension(this, m);
+		for (int i = 0; i < rowSize(); i++)
+			for(int j = 0; j < columnSize(); j++)
+				numbers[i][j] -= m.numbers[i][j];
 	}
 
 	public void multiply(RealMatrix m) {
-		assignMatrix(MatrixOperations.multiplyMatrices(this, m).data(), false);
+//		assignMatrix(MatrixOperations.multiplyMatrices(this, m).data(), false);
+		Utils.checkMatricesCorrectDimensionForMultiplication(this, m);
 
+		int r1 = rowSize(), 
+			c2 = m.columnSize(),
+			common = m.rowSize();
+
+		growColumnsCapacity(columnsLength = c2, false);
+
+		for (int i = 0; i < r1; i++) {
+			double[] rowAux = numbers[i].clone();
+			for (int j = 0; j < c2; j++) {
+				numbers[i][j] = 0;
+				for (int ij = 0; ij < common; ij++) {
+					numbers[i][j] += Utils.shouldRound(rowAux[ij] * m.numbers[ij][j]);
+				}
+			}
+		}
 	}
 
 	public void scalarMultiply(double alpha) {
-		assignMatrix(MatrixOperations.matrixScalarMultiplication(this, alpha).data(), true);
+//		assignMatrix(MatrixOperations.matrixScalarMultiplication(this, alpha).data(), true);
+		for (int i = 0; i < rowSize(); i++)
+			for(int j = 0; j < columnSize(); j++)
+				numbers[i][j] *= alpha;
 	}
 
 }
