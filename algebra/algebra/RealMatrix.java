@@ -436,8 +436,8 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public void swapRows(int indexRow1, int indexRow2) {
-		checkIndexForRow(indexRow1 - 1);
-		checkIndexForRow(indexRow2 - 1);
+		checkIndexForRow(indexRow1);
+		checkIndexForRow(indexRow2);
 		if (indexRow1 == indexRow2)
 			return; // May look if it is better to throw exception
 		swapRowsUnsafe(indexRow1, indexRow2);
