@@ -21,8 +21,8 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	private int currentRowCapacity;
 	private int currentColumnCapacity;
 
-	private static int DEFAULT_ROW_CAPACITY = 3;
-	private static int DEFAULT_COLUMN_CAPACITY = 3;
+	private static int DEFAULT_ROW_CAPACITY = 5;
+	private static int DEFAULT_COLUMN_CAPACITY = 5;
 
 	public RealMatrix() {
 		this(DEFAULT_ROW_CAPACITY, DEFAULT_COLUMN_CAPACITY);
@@ -176,8 +176,8 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 			throw new IllegalArgumentException();
 		}
 
-		Utils.checkIndex(indexRow, rowSize() - 1);
-		Utils.checkIndex(indexColumn, columnSize() - 1);
+		checkIndexForNumber(indexRow,indexColumn);
+
 		double[][] mat = new double[rowsLength - 1][columnsLength - 1];
 		int a = -1, b;
 		for (int i = 0; i < rowSize(); i++) {
@@ -240,32 +240,56 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 		return null;
 	}
 
+	public void addRow(double[] row) {
+		// faster than addRow(rowSize(), row)
+		int len = row.length;
+		checkIfRowCanBeAdded(len);
+		checkRowCapacity();
+//		numbers[rowsLength] = Arrays.copyOf(row, currentColumnCapacity);
+		for(int i = 0; i < len; i++)
+			numbers[len][i] = row[i];
+		rowsLength++;
+	}
+
 	public void addRow(int index, double[] row) {
-		super.addRow(index, row);
-		checkIfRowCanBeAdded(row);
+		checkIndexForAddRow(index);
+		checkIfRowCanBeAdded(row.length);
 		addRowIgnoreRequirements(index, row);
 	}
 
 	private void addRowIgnoreRequirements(int index, double[] row) {
-		if (currentRowCapacity == rowSize())
-			growRowsCapacity();
+		checkRowCapacity();
 		System.arraycopy(numbers, index, numbers, index + 1, rowSize() - index);
 		numbers[index] = Arrays.copyOf(row, currentColumnCapacity);
+		int len = row.length;
+		for(int i = 0; i < len; i++)
+			numbers[index][i] = row[i];
 		rowsLength++;
-		columnsLength = row.length;
+		columnsLength = len;
+	}
+
+	private void checkRowCapacity() {
+		if (currentRowCapacity == rowSize())
+			growRowsCapacity();
+	}
+
+	public void addColumn(double[] column) {
+		int len = column.length;
+		checkIfColumnCanBeAdded(len);
+		checkColumnCapacity();
+		for(int i = 0; i < len; i++)
+			numbers[i][len] = column[i];
+		columnsLength++;
 	}
 
 	public void addColumn(int index, double[] column) {
-		super.addColumn(index, column);
-		checkIfColumnCanBeAdded(column);
+		checkIndexForAddColumn(index);
+		checkIfColumnCanBeAdded(column.length);
 		addColumnIgnoreRequirements(index, column);
 	}
 
 	private void addColumnIgnoreRequirements(int index, double[] column) {
-		checkColumnCompability(column.length);
-		if (currentColumnCapacity == columnSize())
-			growColumnsCapacity();
-		rowsLength = column.length;
+		checkColumnCapacity();
 		for (int i = 0; i < rowSize(); i++) {
 			double[] row = numbers[i];
 			System.arraycopy(row, index, row, index + 1, columnSize() - index);
@@ -275,17 +299,30 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 
 	}
 
-	protected void checkIfRowCanBeAdded(double[] row) {
-		checkRowCompability(row.length);
-		if (isEmpty() && row.length > currentColumnCapacity) {
-			numbers = new double[currentRowCapacity][currentColumnCapacity = columnsLength = row.length];
+	private void checkColumnCapacity() {
+		if (currentColumnCapacity == columnSize())
+			growColumnsCapacity();
+	}
+
+	private void checkIfRowCanBeAdded(int vectorLength) {
+		if (isEmpty()) {
+			if (vectorLength > currentColumnCapacity)
+			numbers = new double[currentRowCapacity]
+					[currentColumnCapacity = columnsLength = vectorLength];
+		} else {
+			if (vectorLength != columnsLength)
+				throw new IllegalArgumentException();
 		}
 	}
 
-	protected void checkIfColumnCanBeAdded(double[] column) {
-		checkColumnCompability(column.length);
-		if (isEmpty() && column.length > currentRowCapacity) {
-			numbers = new double[currentRowCapacity = rowsLength = column.length][currentColumnCapacity];
+	private void checkIfColumnCanBeAdded(int vectorLength) {
+		if (isEmpty()) {
+			if (vectorLength > currentRowCapacity)
+			numbers = new double[currentRowCapacity = rowsLength = vectorLength]
+					[currentColumnCapacity];
+		} else {
+			if (vectorLength != rowsLength)
+				throw new IllegalArgumentException();
 		}
 	}
 
@@ -296,7 +333,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 		growRowsCapacity(MIN_ROWS_GROW, true);
 	}
 
-	private void growRowsCapacity(int newLength, boolean addToCurrentCapacity) {
+	public void growRowsCapacity(int newLength, boolean addToCurrentCapacity) {
 		if (addToCurrentCapacity) {
 			newLength += currentRowCapacity;
 		}
@@ -369,8 +406,8 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public double[] setRow(int index, double[] newRow) {
-		checkIndexForRow(index - 1);
-		checkRowCompability(newRow.length);
+		checkIndexForRow(index);
+		checkIfRowCanBeAdded(newRow.length);
 		return setRowUnsafe(index, newRow);
 	}
 
@@ -390,8 +427,8 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public double[] setColumn(int index, double[] newColumn) {
-		checkIndexForColumn(index - 1);
-		checkColumnCompability(newColumn.length);
+		checkIndexForColumn(index);
+		checkIfColumnCanBeAdded(newColumn.length);
 		return setColumnIgnoreRequirements(index, newColumn);
 	}
 
@@ -416,7 +453,7 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	public double[] removeRow(int index) {
-		checkIndexForRow(index - 1);
+		checkIndexForRow(index);
 		double[] removedRow = getRowUnsafe(index);
 		System.arraycopy(numbers, index + 1, numbers, index, rowSize() - index - 1);
 		rowsLength--;
@@ -450,15 +487,28 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	}
 
 	private void checkIndexForRow(int index) {
-		Utils.checkIndex(index, rowSize());
+		checkIndex0(index, rowSize() - 1);
+	}
+
+	private void checkIndexForAddRow(int index) {
+		checkIndex0(index, rowSize());
 	}
 
 	private void checkIndexForColumn(int index) {
-		Utils.checkIndex(index, columnSize());
+		checkIndex0(index, columnSize() - 1);
 	}
+
+	private void checkIndexForAddColumn(int index) {
+		checkIndex0(index, columnSize());
+	}
+
 	private void checkIndexForNumber(int indexR, int indexC) {
 		checkIndexForRow(indexR);
 		checkIndexForColumn(indexC);
+	}
+
+	private void checkIndex0(int index, int max) {
+		Utils.checkIndex(index, max);
 	}
 
 	/*
@@ -614,42 +664,42 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	@Override
 	public void addRow(int index, int[] row) {
 		checkIndexForRow(index);
-		checkRowCompability(row.length);
+		checkIfColumnCanBeAdded(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public void addRow(int index, byte[] row) {
 		checkIndexForRow(index);
-		checkRowCompability(row.length);
+		checkIfColumnCanBeAdded(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public void addRow(int index, short[] row) {
 		checkIndexForRow(index);
-		checkRowCompability(row.length);
+		checkIfColumnCanBeAdded(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public void addRow(int index, long[] row) {
 		checkIndexForRow(index);
-		checkRowCompability(row.length);
+		checkIfColumnCanBeAdded(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public void addRow(int index, float[] row) {
 		checkIndexForRow(index);
-		checkRowCompability(row.length);
+		checkIfColumnCanBeAdded(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
 	@Override
 	public <T extends Number> void addRow(int index, T[] row) {
 		checkIndexForRow(index);
-		checkRowCompability(row.length);
+		checkIfColumnCanBeAdded(row.length);
 		addRowIgnoreRequirements(index, castToDoubleArray(row));
 	}
 
@@ -686,126 +736,126 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	@Override
 	public void addColumn(int index, int[] column) {
 		checkIndexForColumn(index);
-		checkColumnCompability(column.length);
+		checkIfColumnCanBeAdded(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public void addColumn(int index, byte[] column) {
 		checkIndexForColumn(index);
-		checkColumnCompability(column.length);
+		checkIfColumnCanBeAdded(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public void addColumn(int index, short[] column) {
 		checkIndexForColumn(index);
-		checkColumnCompability(column.length);
+		checkIfColumnCanBeAdded(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public void addColumn(int index, long[] column) {
 		checkIndexForColumn(index);
-		checkColumnCompability(column.length);
+		checkIfColumnCanBeAdded(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public void addColumn(int index, float[] column) {
 		checkIndexForColumn(index);
-		checkColumnCompability(column.length);
+		checkIfColumnCanBeAdded(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public <T extends Number> void addColumn(int index, T[] column) {
 		checkIndexForColumn(index - 1);
-		checkColumnCompability(column.length);
+		checkIfColumnCanBeAdded(column.length);
 		addColumnIgnoreRequirements(index, castToDoubleArray(column));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, int[] newRow) {
-		checkIndexForRow(indexRow - 1);
-		checkRowCompability(newRow.length);
+		checkIndexForRow(indexRow);
+		checkIfColumnCanBeAdded(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, byte[] newRow) {
-		checkIndexForRow(indexRow - 1);
-		checkRowCompability(newRow.length);
+		checkIndexForRow(indexRow);
+		checkIfColumnCanBeAdded(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, short[] newRow) {
-		checkIndexForRow(indexRow - 1);
-		checkRowCompability(newRow.length);
+		checkIndexForRow(indexRow);
+		checkIfColumnCanBeAdded(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, long[] newRow) {
-		checkIndexForRow(indexRow - 1);
-		checkRowCompability(newRow.length);
+		checkIndexForRow(indexRow);
+		checkIfColumnCanBeAdded(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setRow(int indexRow, float[] newRow) {
-		checkIndexForRow(indexRow - 1);
-		checkRowCompability(newRow.length);
+		checkIndexForRow(indexRow);
+		checkIfColumnCanBeAdded(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public <T extends Number> double[] setRow(int indexRow, T[] newRow) {
-		checkIndexForRow(indexRow - 1);
-		checkRowCompability(newRow.length);
+		checkIndexForRow(indexRow);
+		checkIfColumnCanBeAdded(newRow.length);
 		return setRowUnsafe(indexRow, castToDoubleArray(newRow));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, int[] newColumn) {
-		checkIndexForColumn(indexColumn - 1);
-		checkColumnCompability(newColumn.length);
+		checkIndexForColumn(indexColumn);
+		checkIfColumnCanBeAdded(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, byte[] newColumn) {
-		checkIndexForColumn(indexColumn - 1);
-		checkColumnCompability(newColumn.length);
+		checkIndexForColumn(indexColumn);
+		checkIfColumnCanBeAdded(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, short[] newColumn) {
-		checkIndexForColumn(indexColumn - 1);
-		checkColumnCompability(newColumn.length);
+		checkIndexForColumn(indexColumn);
+		checkIfColumnCanBeAdded(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, long[] newColumn) {
-		checkIndexForColumn(indexColumn - 1);
-		checkColumnCompability(newColumn.length);
+		checkIndexForColumn(indexColumn);
+		checkIfColumnCanBeAdded(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public double[] setColumn(int indexColumn, float[] newColumn) {
-		checkIndexForColumn(indexColumn - 1);
-		checkColumnCompability(newColumn.length);
+		checkIndexForColumn(indexColumn);
+		checkIfColumnCanBeAdded(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
 	@Override
 	public <T extends Number> double[] setColumn(int indexColumn, T[] newColumn) {
-		checkIndexForColumn(indexColumn - 1);
-		checkColumnCompability(newColumn.length);
+		checkIndexForColumn(indexColumn);
+		checkIfColumnCanBeAdded(newColumn.length);
 		return setColumnIgnoreRequirements(indexColumn, castToDoubleArray(newColumn));
 	}
 
