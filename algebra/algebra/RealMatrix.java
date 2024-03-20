@@ -25,17 +25,35 @@ public class RealMatrix extends doubleMatrices.AbstractRegularDoubleMatrix
 	private static int DEFAULT_COLUMN_CAPACITY = 5;
 
 	public RealMatrix() {
-		this(DEFAULT_ROW_CAPACITY, DEFAULT_COLUMN_CAPACITY);
+		this(true);
+	}
+
+	public RealMatrix(boolean shouldStartWithCapacityDimension) {
+		this(DEFAULT_ROW_CAPACITY, DEFAULT_COLUMN_CAPACITY, shouldStartWithCapacityDimension);
 	}
 
 	public RealMatrix(int n) {
-		this(n, n);
+		this(n, true);
 	}
 
-	public RealMatrix(int initialRowCapacity, int initialColumnCapacity) {
+	public RealMatrix(int n, boolean shouldStartWithCapacityDimension) {
+		this(n, n, shouldStartWithCapacityDimension);
+	}
+
+	public RealMatrix(int m, int n) {
+		this(m, n, true);
+	}
+
+	public RealMatrix(int initialRowCapacity, int initialColumnCapacity, boolean shouldStartWithCapacityDimension) {
+		if (initialRowCapacity < 0 || initialColumnCapacity < 0)
+			throw new IllegalArgumentException();
 		currentRowCapacity = initialRowCapacity;
 		currentColumnCapacity = initialColumnCapacity;
 		numbers = new double[currentRowCapacity][currentColumnCapacity];
+		if (shouldStartWithCapacityDimension) {
+			rowsLength = currentRowCapacity;
+			columnsLength = currentColumnCapacity;
+		}
 	}
 
 	public RealMatrix(double[][] data) {
